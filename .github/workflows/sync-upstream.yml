@@ -122,7 +122,7 @@ jobs:
         shell: bash
         run: |
           # Keep this fork-specific workflow if upstream changes or removes it.
-          git checkout HEAD@{1} -- .github/workflows/sync-upstream.yml 2>/dev/null || true
+          git checkout 'HEAD@{1}' -- .github/workflows/sync-upstream.yml 2>/dev/null || true
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: restore sync-upstream workflow after sync"
@@ -141,13 +141,15 @@ jobs:
       - name: Summary
         shell: bash
         run: |
-          if [ "${{ steps.check.outputs.needs_update }}" = "true" ]; then
-            echo "### Synced successfully" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Mode:** ${{ steps.resolve.outputs.mode }}" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Source:** upstream/main" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Commit:** \`${{ steps.resolve.outputs.target_sha }}\`" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "### Nothing to update" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Source:** upstream/main" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Commit:** \`${{ steps.resolve.outputs.target_sha }}\`" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          {
+            if [ "${{ steps.check.outputs.needs_update }}" = "true" ]; then
+              echo "### Synced successfully"
+              echo "- **Mode:** ${{ steps.resolve.outputs.mode }}"
+              echo "- **Source:** upstream/main"
+              echo "- **Commit:** \`${{ steps.resolve.outputs.target_sha }}\`"
+            else
+              echo "### Nothing to update"
+              echo "- **Source:** upstream/main"
+              echo "- **Commit:** \`${{ steps.resolve.outputs.target_sha }}\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
